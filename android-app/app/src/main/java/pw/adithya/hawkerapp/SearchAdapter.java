@@ -9,6 +9,8 @@ import android.view.ViewGroup;
 
 import java.util.ArrayList;
 
+import pw.adithya.hawkerapp.Objects.Details;
+
 public class SearchAdapter extends RecyclerView.Adapter<SearchAdapter.SearchViewHolder> {
     private ArrayList<Details> details = new ArrayList<>();
     private Context mContext;
