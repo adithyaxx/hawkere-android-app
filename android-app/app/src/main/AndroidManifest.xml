@@ -18,8 +18,8 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme"
         tools:ignore="GoogleAppIndexingWarning">
-        <activity android:name=".activities.SelectPhotoActivity"></activity>
-        <activity android:name=".activities.CameraKitView" />
+        <activity android:name=".activities.SelectPhotoActivity" />
+        <activity android:name=".activities.ReviewsActivity" />
         <activity
             android:name=".activities.LoginActivity"
             android:label="@string/title_activity_login" />

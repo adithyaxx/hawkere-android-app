@@ -1,5 +1,6 @@
 package pw.adithya.hawkere.activities;
 
+import android.app.ProgressDialog;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
@@ -39,6 +40,7 @@ public class RatingActivity extends AppCompatActivity {
     private boolean ratingExists = false;
     private String documentId = "";
     private EditText reviewEditText;
+    private ProgressDialog progressDialog;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -62,6 +64,11 @@ public class RatingActivity extends AppCompatActivity {
         reviewEditText = findViewById(R.id.edittext_review);
         ImageView tickImageView = findViewById(R.id.imageview_tick);
 
+        progressDialog = new ProgressDialog(this);
+        progressDialog.setIndeterminate(true);
+        progressDialog.setMessage("Uploading...");
+        progressDialog.setCancelable(false);
+
         toolbar.setTitle("Rate / Review");
         setSupportActionBar(toolbar);
         toolbar.setOverflowIcon(getDrawable(R.drawable.ic_check_white_48dp));
@@ -80,6 +87,8 @@ public class RatingActivity extends AppCompatActivity {
         tickImageView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                progressDialog.show();
+
                 if (hygieneRatingBar.getProgress() != 0 && varietyRatingBar.getProgress() != 0 &&
                         seatingRatingBar.getProgress() != 0 && foodRatingBar.getProgress() != 0)
                     submitRating();
@@ -143,6 +152,7 @@ public class RatingActivity extends AppCompatActivity {
                     .addOnSuccessListener(new OnSuccessListener<DocumentReference>() {
                         @Override
                         public void onSuccess(DocumentReference documentReference) {
+                            progressDialog.hide();
                             Toasty.success(RatingActivity.this, "Rating added successfully").show();
                             finish();
                         }
@@ -150,6 +160,7 @@ public class RatingActivity extends AppCompatActivity {
                     .addOnFailureListener(new OnFailureListener() {
                         @Override
                         public void onFailure(@NonNull Exception e) {
+                            progressDialog.hide();
                             Toasty.error(RatingActivity.this, "An error occured, please try again").show();
                             Log.e("Rating", e.getMessage() + "");
                         }
@@ -161,6 +172,7 @@ public class RatingActivity extends AppCompatActivity {
                     .addOnSuccessListener(new OnSuccessListener<Void>() {
                         @Override
                         public void onSuccess(Void aVoid) {
+                            progressDialog.hide();
                             Toasty.success(RatingActivity.this, "Rating added successfully").show();
                             finish();
                         }
@@ -168,6 +180,7 @@ public class RatingActivity extends AppCompatActivity {
                     .addOnFailureListener(new OnFailureListener() {
                         @Override
                         public void onFailure(@NonNull Exception e) {
+                            progressDialog.hide();
                             Toasty.error(RatingActivity.this, "An error occured, please try again").show();
                         }
                     });

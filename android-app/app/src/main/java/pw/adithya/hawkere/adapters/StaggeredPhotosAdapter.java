@@ -14,12 +14,13 @@ import com.bumptech.glide.request.RequestOptions;
 import java.util.ArrayList;
 
 import pw.adithya.hawkere.R;
+import pw.adithya.hawkere.objects.Photo;
 
 public class StaggeredPhotosAdapter extends  RecyclerView.Adapter<StaggeredPhotosAdapter.PhotosViewHolder>{
-    private ArrayList<String> images;
+    private ArrayList<Photo> images;
     Context context;
 
-    public StaggeredPhotosAdapter(ArrayList<String> images, Context context){
+    public StaggeredPhotosAdapter(ArrayList<Photo> images, Context context){
         this.images = images;
         this.context = context;
     }
@@ -36,7 +37,7 @@ public class StaggeredPhotosAdapter extends  RecyclerView.Adapter<StaggeredPhoto
         //Picasso.get().load(images.get(position)).transform(transformation).fit().into(holder.imageView);
 
         Glide.with(context)
-                .load(images.get(position))
+                .load(images.get(position).getUrl())
                 .centerInside()
                 .apply(RequestOptions.bitmapTransform(new RoundedCorners(14)))
                 .into(holder.imageView);

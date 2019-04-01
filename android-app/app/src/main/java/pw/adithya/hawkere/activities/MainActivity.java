@@ -40,6 +40,7 @@ import com.google.firebase.firestore.QuerySnapshot;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.Objects;
 
 import es.dmoral.toasty.Toasty;
@@ -135,8 +136,8 @@ public final class MainActivity extends FragmentActivity implements OnMapReadyCa
                 else {
                     originalLocationButton.callOnClick();
                     CameraPosition cameraPosition = new CameraPosition.Builder()
-                            .target(new LatLng(lat, lng))      // Sets the center of the map to Mountain View
-                            .zoom(12)                   // Sets the zoom
+                            .target(new LatLng(lat - 0.02, lng))      // Sets the center of the map to Mountain View
+                            .zoom(13)                   // Sets the zoom
                             .bearing(0)                // Sets the orientation of the camera to east
                             .tilt(0)                   // Sets the tilt of the camera to 30 degrees
                             .build();
@@ -176,8 +177,6 @@ public final class MainActivity extends FragmentActivity implements OnMapReadyCa
         mMap.setTrafficEnabled(false);
         mMap.setIndoorEnabled(false);
         mMap.setBuildingsEnabled(true);
-
-        //refreshMap();
     }
 
     private class ParseDataSet extends AsyncTask<String, Void, String> {
@@ -260,11 +259,15 @@ public final class MainActivity extends FragmentActivity implements OnMapReadyCa
             if (SmartLocation.with(MainActivity.this).location().getLastLocation() != null)
                 setLocation(Objects.requireNonNull(SmartLocation.with(MainActivity.this).location().getLastLocation()));
         }
+
+        fetchRatings();
     }
 
     private void setLocation(Location location) {
         lat = (float) location.getLatitude();
         lng = (float) location.getLongitude();
+
+        sortDetails();
     }
 
     @Override
@@ -286,12 +289,26 @@ public final class MainActivity extends FragmentActivity implements OnMapReadyCa
         originalLocationButton = ((View) (mapFragment.getView().findViewById(Integer.parseInt("1")).getParent())).findViewById(Integer.parseInt("2"));
         originalLocationButton.setVisibility(View.GONE);
 
-        CameraPosition cameraPosition = new CameraPosition.Builder()
-                .target(new LatLng(1.3521, 103.8198))
-                .zoom(12)
-                .bearing(0)
-                .tilt(0)
-                .build();
+        CameraPosition cameraPosition;
+
+        if (lat == 0 && lng == 0)
+        {
+            cameraPosition = new CameraPosition.Builder()
+                    .target(new LatLng(1.3521-0.06, 103.8198))
+                    .zoom(10)
+                    .bearing(0)
+                    .tilt(0)
+                    .build();
+        }
+        else
+        {
+            cameraPosition = new CameraPosition.Builder()
+                    .target(new LatLng(lat-0.02, lng))
+                    .zoom(13)
+                    .bearing(0)
+                    .tilt(0)
+                    .build();
+        }
 
         mMap.moveCamera(CameraUpdateFactory.newCameraPosition(cameraPosition));
 
@@ -328,15 +345,48 @@ public final class MainActivity extends FragmentActivity implements OnMapReadyCa
                     @Override
                     public void onComplete(@NonNull Task<QuerySnapshot> task) {
                         if (task.isSuccessful()) {
-                            size = task.getResult().size();
+                            ArrayList<Rating> fetchedRatings = new ArrayList<>();
 
                             for (QueryDocumentSnapshot document : task.getResult()) {
                                 Rating r = document.toObject(Rating.class);
 
-                                for (Detail d : details)
+                                fetchedRatings.add(r);
+                            }
+
+                            Collections.sort(fetchedRatings, new Comparator<Rating>() {
+                                @Override
+                                public int compare(Rating r1, Rating r2) {
+                                    if (r1.getPlaceID().compareTo(r2.getPlaceID()) == 0)
+                                        return 0;
+
+                                    return r1.getPlaceID().compareTo(r2.getPlaceID());
+                                }
+                            });
+
+                            int count = 0;
+                            double totalRating = 0;
+
+                            for (Detail d : details)
+                            {
+                                for (Rating rating : fetchedRatings)
                                 {
-                                    if (d.getPlaceID().equals(r.getPlaceID()))
-                                        d.setRating(r.getTotalRating() / size);
+                                    if (rating.getPlaceID().equals(d.getPlaceID()))
+                                    {
+                                        totalRating += rating.getTotalRating();
+                                        count++;
+                                    }
+                                    else if (count > 0)
+                                    {
+                                        d.setRating(totalRating / count);
+                                        count = 0;
+                                        totalRating = 0;
+                                    }
+                                }
+
+                                if (count > 0) {
+                                    d.setRating(totalRating / count);
+                                    count = 0;
+                                    totalRating = 0;
                                 }
                             }
 

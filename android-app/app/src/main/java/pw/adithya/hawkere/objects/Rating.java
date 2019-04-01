@@ -1,6 +1,6 @@
 package pw.adithya.hawkere.objects;
 
-public class Rating {
+public class Rating implements Comparable<Rating> {
     private double hygieneRating;
     private double varietyRating;
     private double seatingRating;
@@ -115,5 +115,15 @@ public class Rating {
 
     public void setTimestamp(long timestamp) {
         this.timestamp = timestamp;
+    }
+
+    @Override
+    public int compareTo(Rating r) {
+        if (timestamp < r.getTimestamp())
+            return 1;
+        else if (timestamp > r.getTimestamp())
+            return -1;
+
+        return 0;
     }
 }

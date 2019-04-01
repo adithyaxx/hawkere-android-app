@@ -22,8 +22,9 @@
     </android.support.design.widget.AppBarLayout>
 
     <android.support.v7.widget.RecyclerView
-        android:id="@+id/recyclerview_photos"
+        android:id="@+id/recyclerview_reviews"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="match_parent"
+        android:paddingBottom="16dp"
         android:layout_below="@id/app_bar_layout" />
 </RelativeLayout>

@@ -1,5 +1,9 @@
 package pw.adithya.hawkere.activities;
 
+import android.app.ProgressDialog;
+import android.content.DialogInterface;
+import android.content.Intent;
+import android.graphics.Color;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
@@ -9,8 +13,11 @@ import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
+import android.widget.ProgressBar;
 
 import com.bumptech.glide.Glide;
+import com.bumptech.glide.load.resource.bitmap.RoundedCorners;
+import com.bumptech.glide.request.RequestOptions;
 import com.google.android.gms.tasks.Continuation;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
@@ -35,10 +42,13 @@ import java.util.Map;
 import es.dmoral.toasty.Toasty;
 import pw.adithya.hawkere.MediaLoader;
 import pw.adithya.hawkere.R;
+import pw.adithya.hawkere.SessionManager;
+import pw.adithya.hawkere.objects.User;
 
 public class SelectPhotoActivity extends AppCompatActivity {
     public static String photoUrl, placeID;
     private ImageView photoImageView;
+    private ProgressDialog progressDialog;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -51,9 +61,18 @@ public class SelectPhotoActivity extends AppCompatActivity {
         ImageView tickImageView = findViewById(R.id.imageview_tick);
 
         toolbar.setTitle("Upload a Photo");
+        toolbar.setTitleTextColor(Color.WHITE);
         setSupportActionBar(toolbar);
 
-        Glide.with(this).load(photoUrl).into(photoImageView);
+        progressDialog = new ProgressDialog(this);
+        progressDialog.setIndeterminate(true);
+        progressDialog.setMessage("Uploading...");
+        progressDialog.setCancelable(false);
+
+        Glide.with(this)
+                .load(photoUrl)
+                .apply(RequestOptions.bitmapTransform(new RoundedCorners(20)))
+                .into(photoImageView);
 
         retakeButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -66,6 +85,7 @@ public class SelectPhotoActivity extends AppCompatActivity {
         tickImageView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                progressDialog.show();
                 uploadPhoto();
             }
         });
@@ -75,7 +95,7 @@ public class SelectPhotoActivity extends AppCompatActivity {
     {
         FirebaseStorage storage = FirebaseStorage.getInstance();
         StorageReference storageRef = storage.getReference();
-        final StorageReference ref = storageRef.child("images/mountains.jpg");
+        final StorageReference ref = storageRef.child(placeID + "_" + System.currentTimeMillis() + ".jpg");
         UploadTask uploadTask = ref.putFile(Uri.fromFile(new File(photoUrl)));
 
         uploadTask.continueWithTask(new Continuation<UploadTask.TaskSnapshot, Task<Uri>>() {
@@ -99,29 +119,44 @@ public class SelectPhotoActivity extends AppCompatActivity {
 
                 }
             }
+        })
+        .addOnFailureListener(new OnFailureListener() {
+            @Override
+            public void onFailure(@NonNull Exception e) {
+                progressDialog.hide();
+                Toasty.error(SelectPhotoActivity.this, "An error occured, please try again").show();
+                Log.e("Rating", e.getMessage() + "");
+            }
         });
     }
 
     private void uploadPhotoURL(String url)
     {
         FirebaseFirestore firestore = FirebaseFirestore.getInstance();
+        User user = new SessionManager(this).getUser();
 
         Map<String, Object> photo = new HashMap<>();
         photo.put("placeID", placeID);
         photo.put("url", url);
+        photo.put("userID", user.getUserID());
+        photo.put("authorName", user.getFirstName() + " " + user.getLastName());
+        photo.put("timestamp", Calendar.getInstance().getTimeInMillis());
+        photo.put("authorPic", user.getProfileImageUrl());
 
         firestore.collection("Photos")
                 .add(photo)
                 .addOnSuccessListener(new OnSuccessListener<DocumentReference>() {
                     @Override
                     public void onSuccess(DocumentReference documentReference) {
-                        Toasty.success(SelectPhotoActivity.this, "Rating added successfully").show();
+                        progressDialog.hide();
+                        Toasty.success(SelectPhotoActivity.this, "Photo uploaded successfully").show();
                         finish();
                     }
                 })
                 .addOnFailureListener(new OnFailureListener() {
                     @Override
                     public void onFailure(@NonNull Exception e) {
+                        progressDialog.hide();
                         Toasty.error(SelectPhotoActivity.this, "An error occured, please try again").show();
                         Log.e("Rating", e.getMessage() + "");
                     }
@@ -141,8 +176,9 @@ public class SelectPhotoActivity extends AppCompatActivity {
                 .onResult(new Action<ArrayList<AlbumFile>>() {
                     @Override
                     public void onAction(@NonNull ArrayList<AlbumFile> result) {
-                        SelectPhotoActivity.placeID = placeID;
                         SelectPhotoActivity.photoUrl = result.get(0).getPath();
+
+                        startActivity(new Intent(SelectPhotoActivity.this, SelectPhotoActivity.class));
                     }
                 })
                 .onCancel(new Action<String>() {

@@ -1,23 +1,35 @@
 package pw.adithya.hawkere.activities;
 
 import android.content.Intent;
+import android.graphics.Bitmap;
+import android.graphics.drawable.BitmapDrawable;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.CardView;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.StaggeredGridLayoutManager;
 import android.support.v7.widget.Toolbar;
-import android.text.format.DateFormat;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.ImageView;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.load.resource.bitmap.CircleCrop;
 import com.bumptech.glide.request.RequestOptions;
+import com.google.android.gms.maps.CameraUpdateFactory;
+import com.google.android.gms.maps.GoogleMap;
+import com.google.android.gms.maps.OnMapReadyCallback;
+import com.google.android.gms.maps.SupportMapFragment;
+import com.google.android.gms.maps.model.BitmapDescriptorFactory;
+import com.google.android.gms.maps.model.CameraPosition;
+import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.MapStyleOptions;
+import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.firestore.FirebaseFirestore;
@@ -29,21 +41,21 @@ import com.yanzhenjie.album.AlbumConfig;
 import com.yanzhenjie.album.AlbumFile;
 
 import java.util.ArrayList;
-import java.util.Calendar;
+import java.util.Collections;
 import java.util.Date;
-import java.util.Locale;
 
 import me.zhanghai.android.materialratingbar.MaterialRatingBar;
 import pw.adithya.hawkere.MediaLoader;
 import pw.adithya.hawkere.R;
 import pw.adithya.hawkere.adapters.StaggeredPhotosAdapter;
 import pw.adithya.hawkere.objects.Detail;
+import pw.adithya.hawkere.objects.Photo;
 import pw.adithya.hawkere.objects.Rating;
 import pw.adithya.hawkere.utils.RecyclerItemClickListener;
 
 import org.ocpsoft.prettytime.PrettyTime;
 
-public class DetailActivity extends AppCompatActivity {
+public class DetailActivity extends AppCompatActivity implements OnMapReadyCallback {
     public static Detail detail;
     FirebaseFirestore firestore;
     int size = 0;
@@ -52,6 +64,11 @@ public class DetailActivity extends AppCompatActivity {
     TextView ratingTextView, reviewsCountTextView, nameTextView, durationTextView, reviewTextView;
     ImageView profileImageView;
     ArrayList<Rating> reviews = new ArrayList<>();
+    ArrayList<Photo> photos = new ArrayList<>();
+    StaggeredPhotosAdapter staggeredPhotosAdapter;
+    RecyclerView photosRecyclerView;
+    RelativeLayout reviewsRelativeLayout;
+    CardView reviewsCardView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -80,22 +97,22 @@ public class DetailActivity extends AppCompatActivity {
 
         profileImageView = findViewById(R.id.imageview_profile_pic);
 
-        final ArrayList<String> items = new ArrayList<>();
+        reviewsRelativeLayout = findViewById(R.id.container_reviews);
+        reviewsCardView = findViewById(R.id.cardview_reviews);
+
+        SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.map);
+        mapFragment.getMapAsync(this);
 
         toolbar.setTitleTextColor(0xFFFFFFFF);
         setSupportActionBar(toolbar);
         getSupportActionBar().setTitle(detail.getName());
 
-        RecyclerView photosRecyclerView = findViewById(R.id.recyclerview_photos);
+        staggeredPhotosAdapter = new StaggeredPhotosAdapter(photos, DetailActivity.this);
+        photosRecyclerView = findViewById(R.id.recyclerview_photos);
         StaggeredGridLayoutManager layoutManager = new StaggeredGridLayoutManager(2, StaggeredGridLayoutManager.HORIZONTAL);
         photosRecyclerView.setLayoutManager(layoutManager);
 
-        items.add("https://proxy.duckduckgo.com/iu/?u=http%3A%2F%2Fimages.huffingtonpost.com%2F2013-12-27-food12.jpg&f=1");
-        items.add("https://www.soomska.com/wp-content/uploads/2017/12/1-1.jpg");
-        items.add("https://proxy.duckduckgo.com/iu/?u=http%3A%2F%2Fwww.michaelray.com%2Fwordpress%2Fwp-content%2Fpittsburgh-photographer%2FPA-food-photographer.jpg&f=1");
-        items.add("https://proxy.duckduckgo.com/iu/?u=https%3A%2F%2Fcdn.pixabay.com%2Fphoto%2F2017%2F07%2F14%2F23%2F25%2Fkebab-2505237_960_720.jpg&f=1");
-
-        photosRecyclerView.setAdapter(new StaggeredPhotosAdapter(items, DetailActivity.this));
+        photosRecyclerView.setAdapter(staggeredPhotosAdapter);
 
         descTextView.setText(detail.getDescription());
         addressTextView.setText(detail.getLongAddr());
@@ -124,7 +141,7 @@ public class DetailActivity extends AppCompatActivity {
                 .OnItemClickListener() {
             @Override
             public void onItemClick(View view, int position) {
-                PhotosActivity.items = items;
+                PhotosActivity.photos = photos;
                 startActivity(new Intent(DetailActivity.this, PhotosActivity.class));
             }
 
@@ -136,11 +153,10 @@ public class DetailActivity extends AppCompatActivity {
         seeAllTextView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-
+                ReviewsActivity.reviews = reviews;
+                startActivity(new Intent(DetailActivity.this, ReviewsActivity.class));
             }
         });
-
-        populateFields();
     }
 
     private void populateFields() {
@@ -179,8 +195,14 @@ public class DetailActivity extends AppCompatActivity {
 
                             if (reviews.size() > 0)
                             {
+                                reviewsCardView.setVisibility(View.VISIBLE);
+                                reviewsRelativeLayout.setVisibility(View.VISIBLE);
+
+                                Collections.sort(reviews);
+
                                 nameTextView.setText(reviews.get(0).getAuthorName());
                                 reviewRatingBar.setRating((float) reviews.get(0).getTotalRating());
+
                                 Glide.with(DetailActivity.this)
                                         .load(reviews.get(0).getAuthorPic())
                                         .apply(RequestOptions.bitmapTransform(new CircleCrop()))
@@ -193,9 +215,40 @@ public class DetailActivity extends AppCompatActivity {
 
                                 reviewTextView.setText(reviews.get(0).getReview());
                             }
+                            else
+                            {
+                                reviewsCardView.setVisibility(View.GONE);
+                                reviewsRelativeLayout.setVisibility(View.GONE);
+                            }
                         }
                         else {
                             Log.e("Error getting documents", "" + task.getException());
+                        }
+                    }
+                });
+
+        firestore.collection("Photos")
+                .get()
+                .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
+                    @Override
+                    public void onComplete(@NonNull Task<QuerySnapshot> task) {
+                        if (task.isSuccessful()) {
+                            for (QueryDocumentSnapshot document : task.getResult()) {
+                                Photo photo = document.toObject(Photo.class);
+
+                                if (photo.getPlaceID().equals(detail.getPlaceID()))
+                                    photos.add(photo);
+                            }
+
+                            if (photos.size() > 0) {
+                                staggeredPhotosAdapter.notifyDataSetChanged();
+                                photosRecyclerView.setVisibility(View.VISIBLE);
+                            }
+                            else
+                                photosRecyclerView.setVisibility(View.GONE);
+                        }
+                        else {
+                            Log.e("Error", "" + task.getException());
                         }
                     }
                 });
@@ -203,7 +256,7 @@ public class DetailActivity extends AppCompatActivity {
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
-        // Inflate the menu; this adds items to the action bar if it is present.
+        // Inflate the menu; this adds photos to the action bar if it is present.
         getMenuInflater().inflate(R.menu.menu, menu);
         return true;
     }
@@ -232,5 +285,38 @@ public class DetailActivity extends AppCompatActivity {
                     }
                 })
                 .start();
+    }
+
+    @Override
+    public void onResume()
+    {
+        super.onResume();
+
+        photos.clear();
+        populateFields();
+    }
+
+    @Override
+    public void onMapReady(GoogleMap googleMap) {
+        CameraPosition cameraPosition = new CameraPosition.Builder()
+                .target(new LatLng(detail.getLat(), detail.getLon()))      // Sets the center of the map to Mountain View
+                .zoom(15)                   // Sets the zoom
+                .bearing(0)                // Sets the orientation of the camera to east
+                .tilt(0)                   // Sets the tilt of the camera to 30 degrees
+                .build();
+
+        googleMap.moveCamera(CameraUpdateFactory.newCameraPosition(cameraPosition));
+
+        googleMap.setMapStyle(MapStyleOptions.loadRawResourceStyle(this, R.raw.style));
+        googleMap.setMapType(GoogleMap.MAP_TYPE_NORMAL);
+        googleMap.setTrafficEnabled(false);
+        googleMap.setIndoorEnabled(false);
+        googleMap.setBuildingsEnabled(true);
+
+        BitmapDrawable bitmapdraw = (BitmapDrawable) getResources().getDrawable(R.drawable.ic_location_marker);
+        Bitmap b = bitmapdraw.getBitmap();
+        Bitmap icon = Bitmap.createScaledBitmap(b, 150, 150, false);
+
+        googleMap.addMarker(new MarkerOptions().icon(BitmapDescriptorFactory.fromBitmap(icon)).position(new LatLng(detail.getLat(), detail.getLon())));
     }
 }

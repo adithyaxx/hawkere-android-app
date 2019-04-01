@@ -13,57 +13,64 @@ import com.bumptech.glide.load.resource.bitmap.CircleCrop;
 import com.bumptech.glide.load.resource.bitmap.RoundedCorners;
 import com.bumptech.glide.request.RequestOptions;
 
-import java.util.ArrayList;
+import org.ocpsoft.prettytime.PrettyTime;
 
+import java.util.ArrayList;
+import java.util.Date;
+
+import me.zhanghai.android.materialratingbar.MaterialRatingBar;
 import pw.adithya.hawkere.R;
 import pw.adithya.hawkere.objects.Photo;
+import pw.adithya.hawkere.objects.Rating;
 
-public class PhotosAdapter extends  RecyclerView.Adapter<PhotosAdapter.PhotosViewHolder>{
-    private ArrayList<Photo> images;
+public class ReviewsAdapter extends  RecyclerView.Adapter<ReviewsAdapter.PhotosViewHolder>{
+    private ArrayList<Rating> reviews;
     Context context;
 
-    public PhotosAdapter(ArrayList<Photo> images, Context context){
-        this.images = images;
+    public ReviewsAdapter(ArrayList<Rating> reviews, Context context){
+        this.reviews = reviews;
         this.context = context;
     }
 
     @Override
     public PhotosViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-        View view= LayoutInflater.from(parent.getContext()).inflate(R.layout.photo_recycler_view,parent,false);
+        View view= LayoutInflater.from(parent.getContext()).inflate(R.layout.review_recycler_view,parent,false);
         return new PhotosViewHolder(view);
     }
 
     @Override
     public void onBindViewHolder(PhotosViewHolder holder, final int position) {
         Glide.with(context)
-                .load(images.get(position).getUrl())
-                .centerCrop()
-                .apply(RequestOptions.bitmapTransform(new RoundedCorners(14)))
-                .into(holder.photoImageView);
-
-        Glide.with(context)
-                .load(images.get(position).getAuthorPic())
+                .load(reviews.get(position).getAuthorPic())
                 .centerCrop()
                 .apply(RequestOptions.bitmapTransform(new CircleCrop()))
                 .into(holder.profileImageView);
 
-        holder.nameTextView.setText(images.get(position).getAuthorName());
+        holder.nameTextView.setText(reviews.get(position).getAuthorName());
+        holder.review.setText(reviews.get(position).getReview());
+        holder.materialRatingBar.setRating((float) reviews.get(position).getTotalRating());
+
+        PrettyTime prettyTime = new PrettyTime();
+        holder.timestamp.setText(prettyTime.format(new Date(reviews.get(position).getTimestamp())));
     }
 
     @Override
     public int getItemCount() {
-        return images.size();
+        return reviews.size();
     }
 
     public class PhotosViewHolder extends RecyclerView.ViewHolder{
-        ImageView profileImageView, photoImageView;
-        TextView nameTextView;
+        ImageView profileImageView;
+        TextView nameTextView, timestamp, review;
+        MaterialRatingBar materialRatingBar;
 
         public PhotosViewHolder(View itemView) {
             super(itemView);
             profileImageView = itemView.findViewById(R.id.imageview_profile_pic);
-            photoImageView = itemView.findViewById(R.id.imageview_photo2);
             nameTextView = itemView.findViewById(R.id.textview_name);
+            timestamp = itemView.findViewById(R.id.textview_duration);
+            review = itemView.findViewById(R.id.textview_review);
+            materialRatingBar = itemView.findViewById(R.id.review_rating_bar);
         }
     }
 }
