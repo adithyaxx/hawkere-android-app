@@ -1,15 +1,12 @@
-package pw.adithya.hawkerapp.utils;
-
-import android.util.Log;
+package pw.adithya.hawkere.utils;
 
 import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
-import org.xml.sax.SAXParseException;
 import org.xml.sax.helpers.DefaultHandler;
 
 import java.util.ArrayList;
 
-import pw.adithya.hawkerapp.Detail;
+import pw.adithya.hawkere.objects.Detail;
 
 public class SAXXMLHandler extends DefaultHandler {
 

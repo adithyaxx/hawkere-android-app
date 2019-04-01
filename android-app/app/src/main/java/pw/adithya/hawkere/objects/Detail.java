@@ -1,4 +1,4 @@
-package pw.adithya.hawkerapp;
+package pw.adithya.hawkere.objects;
 
 import com.google.android.gms.maps.model.Marker;
 

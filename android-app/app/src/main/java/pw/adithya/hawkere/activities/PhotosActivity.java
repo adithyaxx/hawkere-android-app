@@ -1,4 +1,4 @@
-package pw.adithya.hawkerapp.activities;
+package pw.adithya.hawkere.activities;
 
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -7,8 +7,8 @@ import android.support.v7.widget.RecyclerView;
 
 import java.util.ArrayList;
 
-import pw.adithya.hawkerapp.R;
-import pw.adithya.hawkerapp.adapters.PhotosAdapter;
+import pw.adithya.hawkere.R;
+import pw.adithya.hawkere.adapters.PhotosAdapter;
 
 public class PhotosActivity extends AppCompatActivity {
     public static ArrayList<String> items;

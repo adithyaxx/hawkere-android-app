@@ -1,4 +1,4 @@
-package pw.adithya.hawkerapp.utils;
+package pw.adithya.hawkere.utils;
 
 /*
  * Copyright 2014 Google Inc.
@@ -33,7 +33,7 @@ import android.util.LruCache;
 import android.view.Gravity;
 import android.view.View;
 
-import pw.adithya.hawkerapp.R;
+import pw.adithya.hawkere.R;
 
 /**
  * Shadow view based on the {@code ScrimUtil.java} class from the Muzei App. Take a look at

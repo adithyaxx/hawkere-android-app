@@ -1,4 +1,4 @@
-package pw.adithya.hawkerapp;
+package pw.adithya.hawkere;
 
 import android.content.Context;
 import android.support.test.InstrumentationRegistry;
@@ -21,6 +21,6 @@ public class ExampleInstrumentedTest {
         // Context of the app under test.
         Context appContext = InstrumentationRegistry.getTargetContext();
 
-        assertEquals("pw.adithya.hawkerapp", appContext.getPackageName());
+        assertEquals("pw.adithya.hawkere", appContext.getPackageName());
     }
 }

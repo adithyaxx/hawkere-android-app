@@ -1,0 +1,55 @@
+{
+  "project_info": {
+    "project_number": "726753407146",
+    "firebase_url": "https://hawkere-70c06.firebaseio.com",
+    "project_id": "hawkere-70c06",
+    "storage_bucket": "hawkere-70c06.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:726753407146:android:075ff673bdcafead",
+        "android_client_info": {
+          "package_name": "pw.adithya.hawkere"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "726753407146-c5pkkueq6khipu0g3478cbg296bme91m.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "pw.adithya.hawkere",
+            "certificate_hash": "d7b35325cd8cf59fc6fdc05e39e32d8a9e42cf5b"
+          }
+        },
+        {
+          "client_id": "726753407146-oht0i8vtac1h2ktonqd8lvkctnn0cf81.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "***REMOVED***"
+        }
+      ],
+      "services": {
+        "analytics_service": {
+          "status": 1
+        },
+        "appinvite_service": {
+          "status": 2,
+          "other_platform_oauth_client": [
+            {
+              "client_id": "726753407146-erjhu8d8hr1n6g79m8fk0o9ibfliokdc.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        },
+        "ads_service": {
+          "status": 2
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

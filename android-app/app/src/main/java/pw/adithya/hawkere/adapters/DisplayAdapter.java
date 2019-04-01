@@ -1,4 +1,4 @@
-package pw.adithya.hawkerapp.adapters;
+package pw.adithya.hawkere.adapters;
 
 import android.app.Activity;
 import android.support.v7.widget.RecyclerView;
@@ -18,8 +18,8 @@ import java.util.ArrayList;
 
 import jp.wasabeef.picasso.transformations.RoundedCornersTransformation;
 import me.zhanghai.android.materialratingbar.MaterialRatingBar;
-import pw.adithya.hawkerapp.Detail;
-import pw.adithya.hawkerapp.R;
+import pw.adithya.hawkere.objects.Detail;
+import pw.adithya.hawkere.R;
 
 public class DisplayAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> implements Filterable {
     private Activity activity;

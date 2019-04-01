@@ -1,4 +1,4 @@
-package pw.adithya.hawkerapp;
+package pw.adithya.hawkere;
 
 import org.junit.Test;
 

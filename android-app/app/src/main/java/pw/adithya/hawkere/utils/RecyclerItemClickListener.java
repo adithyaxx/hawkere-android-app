@@ -1,4 +1,4 @@
-package pw.adithya.hawkerapp.utils;
+package pw.adithya.hawkere.utils;
 
 import android.content.Context;
 import android.support.v7.widget.RecyclerView;

@@ -1,4 +1,4 @@
-package pw.adithya.hawkerapp.utils;
+package pw.adithya.hawkere.utils;
 
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
@@ -11,7 +11,7 @@ import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
 
-import pw.adithya.hawkerapp.Detail;
+import pw.adithya.hawkere.objects.Detail;
 
 public class SAXXMLParser {
     public static ArrayList<Detail> parse(InputStream is) {

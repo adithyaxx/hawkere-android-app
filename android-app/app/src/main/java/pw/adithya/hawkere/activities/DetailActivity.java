@@ -1,4 +1,4 @@
-package pw.adithya.hawkerapp.activities;
+package pw.adithya.hawkere.activities;
 
 import android.content.Intent;
 import android.support.v7.app.AppCompatActivity;
@@ -14,10 +14,10 @@ import android.widget.TextView;
 import java.util.ArrayList;
 
 import me.zhanghai.android.materialratingbar.MaterialRatingBar;
-import pw.adithya.hawkerapp.Detail;
-import pw.adithya.hawkerapp.R;
-import pw.adithya.hawkerapp.adapters.StaggeredPhotosAdapter;
-import pw.adithya.hawkerapp.utils.RecyclerItemClickListener;
+import pw.adithya.hawkere.objects.Detail;
+import pw.adithya.hawkere.R;
+import pw.adithya.hawkere.adapters.StaggeredPhotosAdapter;
+import pw.adithya.hawkere.utils.RecyclerItemClickListener;
 
 public class DetailActivity extends AppCompatActivity {
     public static Detail detail;
@@ -69,6 +69,7 @@ public class DetailActivity extends AppCompatActivity {
 
                 if(item.getItemId() == R.id.menu_rate)
                 {
+                    RatingActivity.placeID = detail.getPlaceID();
                     startActivity(new Intent(DetailActivity.this, RatingActivity.class));
                 }
                 else if(item.getItemId() == R.id.menu_photo)

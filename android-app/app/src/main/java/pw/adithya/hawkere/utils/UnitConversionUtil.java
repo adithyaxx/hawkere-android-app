@@ -1,4 +1,4 @@
-package pw.adithya.hawkerapp.utils;
+package pw.adithya.hawkere.utils;
 
 import android.content.res.Resources;
 import android.util.DisplayMetrics;

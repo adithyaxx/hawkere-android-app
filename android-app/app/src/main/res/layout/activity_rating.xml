@@ -44,6 +44,7 @@
             android:isIndicator="false"
             android:numStars="5"
             app:mrb_fillBackgroundStars="true"
+            android:max="5"
             app:mrb_progressTint="@color/colorPrimary" />
         <TextView
             android:layout_width="match_parent"
@@ -62,6 +63,7 @@
             android:layout_marginTop="-8dp"
             android:isIndicator="false"
             android:numStars="5"
+            android:max="5"
             app:mrb_fillBackgroundStars="true"
             app:mrb_progressTint="@color/colorPrimary" />
         <TextView
@@ -81,6 +83,7 @@
             android:layout_marginTop="-8dp"
             android:isIndicator="false"
             android:numStars="5"
+            android:max="5"
             app:mrb_fillBackgroundStars="true"
             app:mrb_progressTint="@color/colorPrimary" />
         <TextView
@@ -100,6 +103,7 @@
             android:layout_marginTop="-8dp"
             android:isIndicator="false"
             android:numStars="5"
+            android:max="5"
             app:mrb_fillBackgroundStars="true"
             app:mrb_progressTint="@color/colorPrimary" />
 

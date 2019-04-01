@@ -1,4 +1,4 @@
-package pw.adithya.hawkerapp.activities;
+package pw.adithya.hawkere.activities;
 
 import android.Manifest;
 import android.content.Intent;
@@ -30,6 +30,7 @@ import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MapStyleOptions;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
+import com.google.firebase.FirebaseApp;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -40,12 +41,12 @@ import es.dmoral.toasty.Toasty;
 import io.nlopez.smartlocation.OnLocationUpdatedListener;
 import io.nlopez.smartlocation.SmartLocation;
 import io.nlopez.smartlocation.location.providers.LocationGooglePlayServicesWithFallbackProvider;
-import pw.adithya.hawkerapp.Detail;
-import pw.adithya.hawkerapp.R;
-import pw.adithya.hawkerapp.utils.RecyclerItemClickListener;
-import pw.adithya.hawkerapp.adapters.DisplayAdapter;
-import pw.adithya.hawkerapp.utils.SAXXMLParser;
-import pw.adithya.hawkerapp.utils.UnitConversionUtil;
+import pw.adithya.hawkere.objects.Detail;
+import pw.adithya.hawkere.R;
+import pw.adithya.hawkere.utils.RecyclerItemClickListener;
+import pw.adithya.hawkere.adapters.DisplayAdapter;
+import pw.adithya.hawkere.utils.SAXXMLParser;
+import pw.adithya.hawkere.utils.UnitConversionUtil;
 
 public final class MainActivity extends FragmentActivity implements OnMapReadyCallback, GoogleMap.OnMarkerClickListener, OnLocationUpdatedListener {
 

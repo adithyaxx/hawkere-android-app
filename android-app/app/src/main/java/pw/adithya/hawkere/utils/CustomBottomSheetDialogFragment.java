@@ -1,4 +1,4 @@
-package pw.adithya.hawkerapp.utils;
+package pw.adithya.hawkere.utils;
 
 import android.annotation.SuppressLint;
 import android.app.Dialog;
@@ -10,7 +10,7 @@ import android.support.design.widget.BottomSheetDialogFragment;
 import android.support.design.widget.CoordinatorLayout;
 import android.view.View;
 
-import pw.adithya.hawkerapp.R;
+import pw.adithya.hawkere.R;
 
 public class CustomBottomSheetDialogFragment extends BottomSheetDialogFragment {
 
