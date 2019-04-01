@@ -7,60 +7,41 @@ import android.graphics.Bitmap;
 import android.graphics.drawable.BitmapDrawable;
 import android.location.Location;
 import android.os.AsyncTask;
+import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.design.widget.BottomSheetBehavior;
-import android.support.design.widget.BottomSheetDialogFragment;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.FragmentActivity;
 import android.support.v4.content.ContextCompat;
-import android.support.v7.app.AppCompatActivity;
-import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
-import android.util.Property;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
-import android.widget.Toast;
 
-import com.google.android.gms.location.places.PlaceReport;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
-import com.google.android.gms.maps.model.BitmapDescriptor;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.CameraPosition;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MapStyleOptions;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
-import com.google.maps.android.data.Geometry;
-import com.google.maps.android.data.kml.KmlContainer;
-import com.google.maps.android.data.kml.KmlLayer;
-import com.google.maps.android.data.kml.KmlLineString;
-import com.google.maps.android.data.kml.KmlPlacemark;
-import com.google.maps.android.data.kml.KmlPoint;
-import com.google.maps.android.data.kml.KmlPolygon;
-import com.google.gson.Gson;
 
-import org.json.JSONException;
-import org.xmlpull.v1.XmlPullParserException;
-
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.util.ArrayList;
-import java.util.List;
+import java.util.Collections;
+import java.util.Objects;
 
 import es.dmoral.toasty.Toasty;
 import io.nlopez.smartlocation.OnLocationUpdatedListener;
 import io.nlopez.smartlocation.SmartLocation;
-import pw.adithya.hawkerapp.Objects.Details;
+import io.nlopez.smartlocation.location.providers.LocationGooglePlayServicesWithFallbackProvider;
 
-public final class MainActivity extends FragmentActivity implements OnMapReadyCallback, GoogleMap.OnMarkerClickListener {
+public final class MainActivity extends FragmentActivity implements OnMapReadyCallback, GoogleMap.OnMarkerClickListener, OnLocationUpdatedListener {
 
     private static final int LOCATION_PERMISSION_ID = 1001;
     private BottomSheetBehavior mBottomSheetBehavior;
@@ -68,7 +49,8 @@ public final class MainActivity extends FragmentActivity implements OnMapReadyCa
     private View originalLocationButton;
     private SupportMapFragment mapFragment;
     private float lat = 0, lng = 0;
-    private List<ParsingStructure> parsingStr;
+    private ArrayList<Detail> details;
+    private SearchAdapter searchAdapter;
 
     @Override
     protected void onCreate(Bundle bundle) {
@@ -93,14 +75,7 @@ public final class MainActivity extends FragmentActivity implements OnMapReadyCa
             }
         });
 
-        ArrayList<Details> arrayList = new ArrayList<>();
-
-        SearchAdapter searchAdapter = new SearchAdapter(this, arrayList);
-        RecyclerView mRecyclerView = findViewById(R.id.recycler_view);
-        mRecyclerView.setAdapter(searchAdapter);
-        RecyclerView.LayoutManager layoutManager = new LinearLayoutManager(this);
-        mRecyclerView.setLayoutManager(layoutManager);
-        mRecyclerView.setHasFixedSize(true);
+        new ParsingBigFileAsync().execute();
 
         mapFragment = (SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
@@ -137,47 +112,30 @@ public final class MainActivity extends FragmentActivity implements OnMapReadyCa
         mMap = googleMap;
         mMap.setOnMarkerClickListener(this);
         mMap.setMapStyle(MapStyleOptions.loadRawResourceStyle(this, R.raw.style));
-        googleMap.setMapType(GoogleMap.MAP_TYPE_NORMAL);
-        googleMap.setTrafficEnabled(false);
-        googleMap.setIndoorEnabled(false);
-        googleMap.setBuildingsEnabled(true);
+        mMap.setMapType(GoogleMap.MAP_TYPE_NORMAL);
+        mMap.setTrafficEnabled(false);
+        mMap.setIndoorEnabled(false);
+        mMap.setBuildingsEnabled(true);
 
-        if (ActivityCompat.checkSelfPermission(MainActivity.this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(MainActivity.this, Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
-            googleMap.setMyLocationEnabled(true);
-        }
-
-        googleMap.getUiSettings().setZoomControlsEnabled(false);
-        googleMap.getUiSettings().setMapToolbarEnabled(false);
-
-        originalLocationButton = ((View) (mapFragment.getView().findViewById(Integer.parseInt("1")).getParent())).findViewById(Integer.parseInt("2"));
-        originalLocationButton.setVisibility(View.GONE);
-
-        CameraPosition cameraPosition = new CameraPosition.Builder()
-                .target(new LatLng(1.3521, 103.8198))      // Sets the center of the map to Mountain View
-                .zoom(12)                   // Sets the zoom
-                .bearing(0)                // Sets the orientation of the camera to east
-                .tilt(0)                   // Sets the tilt of the camera to 30 degrees
-                .build();
-
-        mMap.moveCamera(CameraUpdateFactory.newCameraPosition(cameraPosition));
-
-        new ParsingBigFileAsync().execute();
+        refreshMap();
     }
 
-    private class ParsingBigFileAsync extends AsyncTask<String, Void , String> {
-        String  result;
+    private class ParsingBigFileAsync extends AsyncTask<String, Void, String> {
+        String result;
         Dialog dialog;
-        ProgressBar pBar ;
+        ProgressBar pBar;
+
         @Override
-        public void onPreExecute(){
+        public void onPreExecute() {
             dialog = new Dialog(MainActivity.this);
             dialog.setTitle("Loading......");
             dialog.show();
         }
+
         @Override
         protected String doInBackground(String... params) {
             try {
-                parsingStr = SAXXMLParser.parse(getAssets().open("hawker_centres.kml"));
+                details = SAXXMLParser.parse(getAssets().open("hawker_centres.kml"));
                 result = "in";
             } catch (IOException e) {
                 e.printStackTrace();
@@ -188,66 +146,41 @@ public final class MainActivity extends FragmentActivity implements OnMapReadyCa
         }
 
         @Override
-        public void onPostExecute(String result){
-            if(result.equalsIgnoreCase("in")){
-                BitmapDrawable bitmapdraw = (BitmapDrawable) getResources().getDrawable(R.drawable.ic_location_marker);
-                Bitmap b = bitmapdraw.getBitmap();
-                Bitmap icon = Bitmap.createScaledBitmap(b, 30, 30, false);
+        public void onPostExecute(String result) {
+            if (result.equalsIgnoreCase("in")) {
+                sortDetails();
 
-                for (ParsingStructure parsingStructure : parsingStr) {
-                    mMap.addMarker(new MarkerOptions().icon(BitmapDescriptorFactory.fromBitmap(icon)).position(new LatLng(parsingStructure.getLat(), parsingStructure.getLon())));
-                }
+                searchAdapter = new SearchAdapter(details, MainActivity.this);
+                RecyclerView mRecyclerView = findViewById(R.id.recycler_view);
+                mRecyclerView.setAdapter(searchAdapter);
+                RecyclerView.LayoutManager layoutManager = new LinearLayoutManager(MainActivity.this);
+                mRecyclerView.setLayoutManager(layoutManager);
+                mRecyclerView.setHasFixedSize(true);
+
+                if (mMap != null)
+                    refreshMap();
+
                 dialog.dismiss();
             }
         }
-
     }
 
-    /*private ArrayList<Details> getDetails()
-    {
-        InputStream kmlInputStream = getResources().openRawResource(R.raw.hawker_centres);
-        try {
-            KmlLayer kmlLayer = new KmlLayer(mMap, kmlInputStream, getApplicationContext());
-            kmlLayer.addLayerToMap();
+    private void sortDetails() {
+        if (details != null) {
+            Location currLocation = new Location("");
+            currLocation.setLatitude(lat);
+            currLocation.setLongitude(lng);
 
-            BitmapDrawable bitmapdraw = (BitmapDrawable) getResources().getDrawable(R.drawable.ic_location_marker);
-            Bitmap b = bitmapdraw.getBitmap();
-            Bitmap icon = Bitmap.createScaledBitmap(b, 30, 30, false);
-
-            ArrayList<LatLng> pathPoints = new ArrayList<>();
-
-            if (kmlLayer.getContainers() != null) {
-                for (KmlContainer container : kmlLayer.getContainers()) {
-                    if (container.hasPlacemarks()) {
-                        for (KmlPlacemark placemark : container.getPlacemarks())
-                        {
-                            Geometry geometry = placemark.getGeometry();
-                            placemark.getMarkerOptions().icon(BitmapDescriptorFactory.fromBitmap(icon));
-                            if (geometry.getGeometryType().equals("Point")) {
-                                KmlPoint point = (KmlPoint) geometry;
-                                LatLng latLng = new LatLng(point.getGeometryObject().latitude, point.getGeometryObject().longitude);
-                                pathPoints.add(latLng);
-                            } else if (geometry.getGeometryType().equals("LineString")) {
-                                KmlLineString kmlLineString = (KmlLineString) geometry;
-                                ArrayList<LatLng> coords = kmlLineString.getGeometryObject();
-                                pathPoints.addAll(coords);
-                            }
-                        }
-                    }
-                }
-
-                for (LatLng latLng : pathPoints) {
-                    MarkerOptions markerOptions = new MarkerOptions();
-
-                    mMap.addMarker(markerOptions);
-                }
+            for (Detail detail : details) {
+                Location location = new Location("");
+                location.setLatitude(detail.getLat());
+                location.setLongitude(detail.getLon());
+                detail.setDistance(currLocation.distanceTo(location));
             }
-        } catch (XmlPullParserException e) {
-            e.printStackTrace();
-        } catch (IOException e) {
-            e.printStackTrace();
+
+            Collections.sort(details);
         }
-    }*/
+    }
 
     @Override
     public boolean onMarkerClick(Marker marker) {
@@ -262,20 +195,78 @@ public final class MainActivity extends FragmentActivity implements OnMapReadyCa
     }
 
     @Override
-    public void onResume()
-    {
+    public void onResume() {
         super.onResume();
 
         if (ContextCompat.checkSelfPermission(MainActivity.this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED)
             ActivityCompat.requestPermissions(MainActivity.this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, LOCATION_PERMISSION_ID);
 
         SmartLocation.with(MainActivity.this).location()
-                .start(new OnLocationUpdatedListener() {
-                    @Override
-                    public void onLocationUpdated(Location location) {
-                        lat = (float) location.getLatitude();
-                        lng = (float) location.getLongitude();
-                    }
-                });
+                .start(this);
+
+        if (ContextCompat.checkSelfPermission(MainActivity.this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(MainActivity.this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, LOCATION_PERMISSION_ID);
+        } else {
+            SmartLocation.with(MainActivity.this)
+                    .location(new LocationGooglePlayServicesWithFallbackProvider(Objects.requireNonNull(MainActivity.this)))
+                    .start(this);
+
+            if (SmartLocation.with(MainActivity.this).location().getLastLocation() != null)
+                setLocation(Objects.requireNonNull(SmartLocation.with(MainActivity.this).location().getLastLocation()));
+        }
+    }
+
+    private void setLocation(Location location) {
+        lat = (float) location.getLatitude();
+        lng = (float) location.getLongitude();
+    }
+
+    @Override
+    public void onLocationUpdated(Location location) {
+        setLocation(location);
+        searchAdapter.notifyDataSetChanged();
+    }
+
+    private void refreshMap() {
+        if (ActivityCompat.checkSelfPermission(MainActivity.this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(MainActivity.this, Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
+            mMap.setMyLocationEnabled(true);
+        }
+
+        mMap.getUiSettings().setZoomControlsEnabled(false);
+        mMap.getUiSettings().setMapToolbarEnabled(false);
+
+        originalLocationButton = ((View) (mapFragment.getView().findViewById(Integer.parseInt("1")).getParent())).findViewById(Integer.parseInt("2"));
+        originalLocationButton.setVisibility(View.GONE);
+
+        CameraPosition cameraPosition = new CameraPosition.Builder()
+                .target(new LatLng(1.3521, 103.8198))
+                .zoom(12)
+                .bearing(0)
+                .tilt(0)
+                .build();
+
+        mMap.moveCamera(CameraUpdateFactory.newCameraPosition(cameraPosition));
+
+        int size = 140;
+
+        if (details != null) {
+            for (int i = 0; i < details.size(); i++) {
+                Detail detail = details.get(i);
+
+                if (size > 70)
+                    size -= 3 * i;
+
+                Marker m = detail.getMarker();
+
+                if (m != null)
+                    m.remove();
+
+                BitmapDrawable bitmapdraw = (BitmapDrawable) getResources().getDrawable(R.drawable.ic_location_marker);
+                Bitmap b = bitmapdraw.getBitmap();
+                Bitmap icon = Bitmap.createScaledBitmap(b, size, size, false);
+
+                detail.setMarker(mMap.addMarker(new MarkerOptions().icon(BitmapDescriptorFactory.fromBitmap(icon)).position(new LatLng(detail.getLat(), detail.getLon()))));
+            }
+        }
     }
 }

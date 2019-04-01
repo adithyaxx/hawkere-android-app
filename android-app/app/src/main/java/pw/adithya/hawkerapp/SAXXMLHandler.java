@@ -3,74 +3,108 @@ package pw.adithya.hawkerapp;
 import android.util.Log;
 
 import org.xml.sax.Attributes;
+import org.xml.sax.SAXException;
 import org.xml.sax.SAXParseException;
 import org.xml.sax.helpers.DefaultHandler;
 
 import java.util.ArrayList;
-import java.util.List;
 
 public class SAXXMLHandler extends DefaultHandler {
 
-    private List<ParsingStructure> parsingStructure;
-    private StringBuilder tempVal;
-    private ParsingStructure tempStr;
+    private StringBuilder str;
+    private ArrayList<Detail> details;
+    private Detail detail;
+    private boolean isPhotoURL = false, isName = false, isShortAddr = false, isLongAddr = false, isDesc = false, isPlaceID = false, isLat = false, isLon = false, isNoOfStalls = false;
 
     public SAXXMLHandler() {
-        parsingStructure = new ArrayList<>();
+        details = new ArrayList<>();
     }
 
-    public List<ParsingStructure> getParsingvalues() {
-        return parsingStructure;
+    public ArrayList<Detail> getDetails() {
+        return details;
     }
+
     public void startElement(String uri, String localName, String qName,
-                             Attributes attributes) {
+                             Attributes attributes) throws SAXException {
+        str = new StringBuilder();
+        isName = false;
+        isShortAddr = false;
+        isLongAddr = false;
+        isDesc = false;
+        isPlaceID = false;
+        isLat = false;
+        isLon = false;
+        isNoOfStalls = false;
+        isPhotoURL = false;
 
-        tempVal = new StringBuilder();
         if (qName.equalsIgnoreCase("Placemark")) {
-            tempStr = new ParsingStructure();
+            detail = new Detail();
+        } else if (qName.equalsIgnoreCase("SimpleData")) {
+            if (attributes.getValue("name").equalsIgnoreCase("NO_OF_FOOD_STALLS"))
+                isNoOfStalls = true;
+            else if (attributes.getValue("name").equalsIgnoreCase("NAME"))
+                isName = true;
+            else if (attributes.getValue("name").equalsIgnoreCase("ADDRESSSTREETNAME"))
+                isShortAddr = true;
+            else if (attributes.getValue("name").equalsIgnoreCase("ADDRESS_MYENV"))
+                isLongAddr = true;
+            else if (attributes.getValue("name").equalsIgnoreCase("DESCRIPTION_MYENV"))
+                isDesc = true;
+            else if (attributes.getValue("name").equalsIgnoreCase("INC_CRC"))
+                isPlaceID = true;
+            else if (attributes.getValue("name").equalsIgnoreCase("LATITUDE"))
+                isLat = true;
+            else if (attributes.getValue("name").equalsIgnoreCase("LONGITUDE"))
+                isLon = true;
+            else if (attributes.getValue("name").equalsIgnoreCase("PHOTOURL"))
+                isPhotoURL = true;
         }
     }
 
     public void characters(char[] ch, int start, int length) {
-        if (tempVal != null) {
+        if (str != null) {
             for (int i=start; i<start+length; i++) {
-                tempVal.append(ch[i]);
+                str.append(ch[i]);
             }
         }
     }
 
     public void endElement(String uri, String localName, String qName) {
-        if (qName.equalsIgnoreCase("Placemark")) {
-            // add it to the list
-            parsingStructure.add(tempStr);
-        } else if (qName.equalsIgnoreCase("name")) {
-            if(tempStr != null)
-                tempStr.setName(tempVal.toString());
-        } else if (qName.equalsIgnoreCase("description")) {
-            if(tempStr != null)
-                tempStr.setDescription(tempVal.toString());
-        } else if (qName.equalsIgnoreCase("coordinates")) {
-            if(tempStr != null) {
-                String[] latlong =  tempVal.toString().split(",");
-                float longitude = Float.parseFloat(latlong[0]);
-                float latitude = Float.parseFloat(latlong[1]);
-                tempStr.setLat(latitude);
-                tempStr.setLon(longitude);
+        if (qName.equalsIgnoreCase("Placemark"))
+            details.add(detail);
+        else if (qName.equalsIgnoreCase("SimpleData"))
+        {
+            try {
+                if (isNoOfStalls)
+                    detail.setNoOfStalls(Integer.parseInt(str.toString()));
+
+                else if (isName)
+                    detail.setName(str.toString());
+
+                else if (isShortAddr)
+                    detail.setShortAddr(str.toString());
+
+                else if (isLongAddr)
+                    detail.setLongAddr(str.toString());
+
+                else if (isDesc)
+                    detail.setDescription(str.toString());
+
+                else if (isPlaceID)
+                    detail.setPlaceID(str.toString());
+
+                else if (isLat)
+                    detail.setLat(Float.parseFloat(str.toString()));
+
+                else if (isLon)
+                    detail.setLon(Float.parseFloat(str.toString()));
+
+                else if (isPhotoURL)
+                    detail.setPhotoURL(str.toString());
+            } catch (NumberFormatException e)
+            {
+                e.printStackTrace();
             }
-        } else if(qName.equalsIgnoreCase("kml")) {
-            Log.e("kml", tempVal.toString());
         }
-    }
-
-    public void warning(SAXParseException e) {
-
-    }
-
-    public void error(SAXParseException e) {
-
-    }
-
-    public void fatalError(SAXParseException e) {
-
     }
 }

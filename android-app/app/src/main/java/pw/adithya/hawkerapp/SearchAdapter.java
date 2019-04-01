@@ -1,51 +1,76 @@
 package pw.adithya.hawkerapp;
 
+import android.app.Activity;
 import android.content.Context;
 import android.support.annotation.NonNull;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
+import android.widget.TextView;
+
+import com.squareup.picasso.Picasso;
 
 import java.util.ArrayList;
 
-import pw.adithya.hawkerapp.Objects.Details;
+import me.zhanghai.android.materialratingbar.MaterialRatingBar;
 
-public class SearchAdapter extends RecyclerView.Adapter<SearchAdapter.SearchViewHolder> {
-    private ArrayList<Details> details = new ArrayList<>();
-    private Context mContext;
+public class SearchAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
+    private Activity activity;
+    private ArrayList<Detail> details;
 
-    SearchAdapter(Context context, ArrayList<Details> details) {
-        this.mContext = context;
+    public SearchAdapter(ArrayList<Detail> details, Activity activity) {
+        this.activity = activity;
         this.details = details;
     }
 
-    @NonNull
     @Override
-    public SearchViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-        View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.child_recycler_view, parent, false);
-        return new SearchViewHolder(view);
+    public RecyclerView.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
+        View view = LayoutInflater.from(parent.getContext())
+                .inflate(R.layout.child_recycler_view, parent, false);
+
+        return new MyViewHolder(view);
     }
 
     @Override
-    public void onBindViewHolder(@NonNull SearchViewHolder holder, int position) {
+    public void onBindViewHolder(RecyclerView.ViewHolder holder, final int position) {
+        final MyViewHolder vh = (MyViewHolder) holder;
 
+        vh.nameTextView.setText(details.get(position).getName());
+        vh.addressTextView.setText(details.get(position).getShortAddr());
+
+        if (details.get(position).getDistance() < 1000)
+            vh.distanceTextView.setText(details.get(position).getDistance() + "m");
+        else
+            vh.distanceTextView.setText(String.format("%.1fkm", details.get(position).getDistance() / 1000));
+
+        if(!details.get(position).getPhotoURL().equalsIgnoreCase(""))
+            Picasso.get().load(details.get(position).getPhotoURL()).into(vh.imageView);
     }
 
     @Override
     public int getItemCount() {
+        if (details == null)
+            return 0;
+
         return details.size();
     }
 
-    public class SearchViewHolder extends RecyclerView.ViewHolder {
-        private Context mContext;
+    private class MyViewHolder extends RecyclerView.ViewHolder {
+        private TextView nameTextView, addressTextView, distanceTextView;
+        private MaterialRatingBar materialRatingBar;
+        private ImageView imageView;
 
-        SearchViewHolder(View itemView) {
-            super(itemView);
-            mContext = itemView.getContext();
-        }
+        private MyViewHolder(View view) {
+            super(view);
 
-        public void bindDetails (Details details) {
+            nameTextView = view.findViewById(R.id.textview_name);
+            distanceTextView = view.findViewById(R.id.textview_distance);
+            addressTextView = view.findViewById(R.id.textview_address);
+            materialRatingBar = view.findViewById(R.id.material_rating_bar);
+            imageView = view.findViewById(R.id.imageview_pic);
         }
     }
 }
