@@ -1,7 +1,7 @@
-package pw.adithya.hawkerapp;
+package pw.adithya.hawkerapp.activities;
 
 import android.Manifest;
-import android.app.Dialog;
+import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.drawable.BitmapDrawable;
@@ -15,11 +15,11 @@ import android.support.v4.app.FragmentActivity;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
-import android.util.Log;
 import android.view.View;
 import android.widget.ImageView;
-import android.widget.ProgressBar;
+import android.widget.TextView;
 
+import com.arlib.floatingsearchview.FloatingSearchView;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
@@ -40,6 +40,12 @@ import es.dmoral.toasty.Toasty;
 import io.nlopez.smartlocation.OnLocationUpdatedListener;
 import io.nlopez.smartlocation.SmartLocation;
 import io.nlopez.smartlocation.location.providers.LocationGooglePlayServicesWithFallbackProvider;
+import pw.adithya.hawkerapp.Detail;
+import pw.adithya.hawkerapp.R;
+import pw.adithya.hawkerapp.utils.RecyclerItemClickListener;
+import pw.adithya.hawkerapp.adapters.DisplayAdapter;
+import pw.adithya.hawkerapp.utils.SAXXMLParser;
+import pw.adithya.hawkerapp.utils.UnitConversionUtil;
 
 public final class MainActivity extends FragmentActivity implements OnMapReadyCallback, GoogleMap.OnMarkerClickListener, OnLocationUpdatedListener {
 
@@ -49,8 +55,9 @@ public final class MainActivity extends FragmentActivity implements OnMapReadyCa
     private View originalLocationButton;
     private SupportMapFragment mapFragment;
     private float lat = 0, lng = 0;
-    private ArrayList<Detail> details;
-    private SearchAdapter searchAdapter;
+    private ArrayList<Detail> details = new ArrayList<>();
+    private DisplayAdapter displayAdapter;
+    private TextView title;
 
     @Override
     protected void onCreate(Bundle bundle) {
@@ -75,7 +82,28 @@ public final class MainActivity extends FragmentActivity implements OnMapReadyCa
             }
         });
 
-        new ParsingBigFileAsync().execute();
+        new ParseDataSet().execute();
+
+        title = findViewById(R.id.textview_title);
+        displayAdapter = new DisplayAdapter(details, MainActivity.this);
+        RecyclerView mRecyclerView = findViewById(R.id.recycler_view);
+        mRecyclerView.setAdapter(displayAdapter);
+        RecyclerView.LayoutManager layoutManager = new LinearLayoutManager(MainActivity.this);
+        mRecyclerView.setLayoutManager(layoutManager);
+        mRecyclerView.setHasFixedSize(true);
+
+        mRecyclerView.addOnItemTouchListener(new RecyclerItemClickListener(this, mRecyclerView, new RecyclerItemClickListener
+                .OnItemClickListener() {
+            @Override
+            public void onItemClick(View view, int position) {
+                DetailActivity.detail = details.get(position);
+                startActivity(new Intent(MainActivity.this, DetailActivity.class));
+            }
+
+            @Override
+            public void onItemLongClick(View view, int position) {
+            }
+        }));
 
         mapFragment = (SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
@@ -95,13 +123,33 @@ public final class MainActivity extends FragmentActivity implements OnMapReadyCa
                 else {
                     originalLocationButton.callOnClick();
                     CameraPosition cameraPosition = new CameraPosition.Builder()
-                            .target(new LatLng(1.3521, 103.8198))      // Sets the center of the map to Mountain View
+                            .target(new LatLng(lat, lng))      // Sets the center of the map to Mountain View
                             .zoom(12)                   // Sets the zoom
                             .bearing(0)                // Sets the orientation of the camera to east
                             .tilt(0)                   // Sets the tilt of the camera to 30 degrees
                             .build();
 
                     mMap.animateCamera(CameraUpdateFactory.newCameraPosition(cameraPosition));
+                }
+            }
+        });
+
+        FloatingSearchView floatingSearchView = findViewById(R.id.floating_search_view);
+
+        floatingSearchView.setOnQueryChangeListener(new FloatingSearchView.OnQueryChangeListener() {
+            @Override
+            public void onSearchTextChanged(String oldQuery, final String newQuery) {
+                displayAdapter.getFilter().filter(newQuery);
+
+                if (displayAdapter.getItemCount() == 0) {
+                    mBottomSheetBehavior.setPeekHeight(UnitConversionUtil.convertDpToPx(100));
+
+                    title.setText("No Results Available");
+                }
+                else {
+                    mBottomSheetBehavior.setPeekHeight(UnitConversionUtil.convertDpToPx(300));
+
+                    title.setText("Hawker Centres Nearby");
                 }
             }
         });
@@ -117,25 +165,20 @@ public final class MainActivity extends FragmentActivity implements OnMapReadyCa
         mMap.setIndoorEnabled(false);
         mMap.setBuildingsEnabled(true);
 
-        refreshMap();
+        //refreshMap();
     }
 
-    private class ParsingBigFileAsync extends AsyncTask<String, Void, String> {
+    private class ParseDataSet extends AsyncTask<String, Void, String> {
         String result;
-        Dialog dialog;
-        ProgressBar pBar;
 
         @Override
         public void onPreExecute() {
-            dialog = new Dialog(MainActivity.this);
-            dialog.setTitle("Loading......");
-            dialog.show();
         }
 
         @Override
         protected String doInBackground(String... params) {
             try {
-                details = SAXXMLParser.parse(getAssets().open("hawker_centres.kml"));
+                details.addAll(SAXXMLParser.parse(getAssets().open("hawker_centres.kml")));
                 result = "in";
             } catch (IOException e) {
                 e.printStackTrace();
@@ -150,17 +193,8 @@ public final class MainActivity extends FragmentActivity implements OnMapReadyCa
             if (result.equalsIgnoreCase("in")) {
                 sortDetails();
 
-                searchAdapter = new SearchAdapter(details, MainActivity.this);
-                RecyclerView mRecyclerView = findViewById(R.id.recycler_view);
-                mRecyclerView.setAdapter(searchAdapter);
-                RecyclerView.LayoutManager layoutManager = new LinearLayoutManager(MainActivity.this);
-                mRecyclerView.setLayoutManager(layoutManager);
-                mRecyclerView.setHasFixedSize(true);
-
                 if (mMap != null)
                     refreshMap();
-
-                dialog.dismiss();
             }
         }
     }
@@ -224,7 +258,9 @@ public final class MainActivity extends FragmentActivity implements OnMapReadyCa
     @Override
     public void onLocationUpdated(Location location) {
         setLocation(location);
-        searchAdapter.notifyDataSetChanged();
+
+        if (displayAdapter != null)
+            displayAdapter.notifyDataSetChanged();
     }
 
     private void refreshMap() {
@@ -268,5 +304,7 @@ public final class MainActivity extends FragmentActivity implements OnMapReadyCa
                 detail.setMarker(mMap.addMarker(new MarkerOptions().icon(BitmapDescriptorFactory.fromBitmap(icon)).position(new LatLng(detail.getLat(), detail.getLon()))));
             }
         }
+
+        displayAdapter.notifyDataSetChanged();
     }
 }

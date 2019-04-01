@@ -1,4 +1,4 @@
-package pw.adithya.hawkerapp;
+package pw.adithya.hawkerapp.utils;
 
 import android.util.Log;
 
@@ -8,6 +8,8 @@ import org.xml.sax.SAXParseException;
 import org.xml.sax.helpers.DefaultHandler;
 
 import java.util.ArrayList;
+
+import pw.adithya.hawkerapp.Detail;
 
 public class SAXXMLHandler extends DefaultHandler {
 
@@ -78,8 +80,17 @@ public class SAXXMLHandler extends DefaultHandler {
                 if (isNoOfStalls)
                     detail.setNoOfStalls(Integer.parseInt(str.toString()));
 
-                else if (isName)
-                    detail.setName(str.toString());
+                else if (isName) {
+                    int index1 = str.indexOf("(");
+                    int index2 = str.indexOf(")");
+
+                    if (index1 == -1)
+                        detail.setName(str.toString());
+                    else
+                    {
+                        detail.setName(str.substring(index1+1, index2));
+                    }
+                }
 
                 else if (isShortAddr)
                     detail.setShortAddr(str.toString());

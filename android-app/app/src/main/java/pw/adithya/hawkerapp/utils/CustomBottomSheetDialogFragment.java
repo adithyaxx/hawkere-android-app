@@ -1,5 +1,6 @@
-package pw.adithya.hawkerapp;
+package pw.adithya.hawkerapp.utils;
 
+import android.annotation.SuppressLint;
 import android.app.Dialog;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
@@ -8,6 +9,8 @@ import android.support.design.widget.BottomSheetBehavior;
 import android.support.design.widget.BottomSheetDialogFragment;
 import android.support.design.widget.CoordinatorLayout;
 import android.view.View;
+
+import pw.adithya.hawkerapp.R;
 
 public class CustomBottomSheetDialogFragment extends BottomSheetDialogFragment {
 
@@ -31,6 +34,7 @@ public class CustomBottomSheetDialogFragment extends BottomSheetDialogFragment {
         }
     };
 
+    @SuppressLint("RestrictedApi")
     @Override
     public void setupDialog(Dialog dialog, int style) {
         super.setupDialog(dialog, style);

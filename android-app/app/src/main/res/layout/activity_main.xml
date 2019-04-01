@@ -59,6 +59,7 @@
                 app:cardElevation="0dp"
                 app:cardBackgroundColor="@color/light_gray"
                 app:cardCornerRadius="2dp"/>
+
             <RelativeLayout
                 android:id="@+id/relative_layout"
                 android:layout_width="match_parent"
@@ -66,6 +67,7 @@
                 android:clipToPadding="false" >
 
                 <TextView
+                    android:id="@+id/textview_title"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_centerInParent="true"
@@ -86,6 +88,7 @@
                     android:layout_alignParentRight="true"
                     android:src="@drawable/ic_location"/>
             </RelativeLayout>
+
 
             <android.support.v7.widget.RecyclerView
                 android:id="@+id/recycler_view"

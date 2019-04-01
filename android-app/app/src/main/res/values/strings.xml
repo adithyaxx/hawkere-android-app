@@ -1,3 +1,4 @@
 <resources>
     <string name="app_name">HawkerApp</string>
+    <string name="title_activity_rating">RatingActivity</string>
 </resources>
