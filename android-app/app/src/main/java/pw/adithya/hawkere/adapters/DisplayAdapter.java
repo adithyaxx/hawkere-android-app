@@ -58,6 +58,7 @@ public class DisplayAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
         if(!filteredArrayList.get(position).getPhotoURL().equalsIgnoreCase(""))
             Picasso.get().load(filteredArrayList.get(position).getPhotoURL()).transform(transformation).resize(200,200).centerCrop().into(vh.imageView);
 
+        vh.materialRatingBar.setRating((float) filteredArrayList.get(position).getRating());
     }
 
     @Override

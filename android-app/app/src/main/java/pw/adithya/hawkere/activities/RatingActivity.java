@@ -6,7 +6,9 @@ import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
+import android.view.View;
 import android.widget.EditText;
+import android.widget.ImageView;
 
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
@@ -17,7 +19,6 @@ import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 import com.google.firebase.firestore.QuerySnapshot;
 
-import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.HashMap;
 import java.util.Map;
@@ -35,6 +36,9 @@ public class RatingActivity extends AppCompatActivity {
     private User user;
     private Rating rating = null;
     private MaterialRatingBar hygieneRatingBar, varietyRatingBar, seatingRatingBar, foodRatingBar;
+    private boolean ratingExists = false;
+    private String documentId = "";
+    private EditText reviewEditText;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -55,10 +59,12 @@ public class RatingActivity extends AppCompatActivity {
         seatingRatingBar.setMax(5);
         foodRatingBar.setMax(5);
 
-        EditText reviewEditText = findViewById(R.id.edittext_review);
+        reviewEditText = findViewById(R.id.edittext_review);
+        ImageView tickImageView = findViewById(R.id.imageview_tick);
 
         toolbar.setTitle("Rate / Review");
         setSupportActionBar(toolbar);
+        toolbar.setOverflowIcon(getDrawable(R.drawable.ic_check_white_48dp));
 
         SessionManager sessionManager = new SessionManager(this);
 
@@ -70,7 +76,18 @@ public class RatingActivity extends AppCompatActivity {
         }
 
         populateFields();
-        //submitRating();
+
+        tickImageView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (hygieneRatingBar.getProgress() != 0 && varietyRatingBar.getProgress() != 0 &&
+                        seatingRatingBar.getProgress() != 0 && foodRatingBar.getProgress() != 0)
+                    submitRating();
+                else
+                    Toasty.error(RatingActivity.this, "All rating fields must be filled up").show();
+
+            }
+        });
     }
 
     private void populateFields() {
@@ -84,16 +101,16 @@ public class RatingActivity extends AppCompatActivity {
                             for (QueryDocumentSnapshot document : task.getResult()) {
                                 Rating r = document.toObject(Rating.class);
 
-                                if (r.getPlaceID().equals(placeID) && r.getUserID().equals(user.getUserID()))
-                                {
+                                if (r.getPlaceID().equals(placeID) && r.getUserID().equals(user.getUserID())) {
                                     rating = r;
 
-                                    hygieneRatingBar.setProgress((int)(rating.getHygieneRating()));
-                                    varietyRatingBar.setProgress((int)(rating.getVarietyRating()));
-                                    foodRatingBar.setProgress((int)(rating.getFoodRating()));
-                                    seatingRatingBar.setProgress((int)(rating.getSeatingRating()));
+                                    hygieneRatingBar.setRating((float) (rating.getHygieneRating()));
+                                    varietyRatingBar.setRating((float) (rating.getVarietyRating()));
+                                    foodRatingBar.setRating((float) (rating.getFoodRating()));
+                                    seatingRatingBar.setRating((float) (rating.getSeatingRating()));
 
-                                    Toasty.success(RatingActivity.this, "YES").show();
+                                    ratingExists = true;
+                                    documentId = document.getId();
                                 }
                             }
 
@@ -105,31 +122,55 @@ public class RatingActivity extends AppCompatActivity {
     }
 
     private void submitRating() {
+        double totalRating = foodRatingBar.getRating() + varietyRatingBar.getRating() + seatingRatingBar.getRating() + hygieneRatingBar.getRating();
+
         Map<String, Object> rating = new HashMap<>();
-        rating.put("foodRating", 5.0);
-        rating.put("hygieneRating", 5.0);
-        rating.put("seatingRating", 5.0);
-        rating.put("varietyRating", 5.0);
+        rating.put("foodRating", foodRatingBar.getRating());
+        rating.put("hygieneRating", hygieneRatingBar.getRating());
+        rating.put("seatingRating", seatingRatingBar.getRating());
+        rating.put("varietyRating", varietyRatingBar.getRating());
         rating.put("placeID", placeID);
         rating.put("userID", user.getUserID());
-        rating.put("review", "");
+        rating.put("review", reviewEditText.getText().toString());
         rating.put("authorName", user.getFirstName() + " " + user.getLastName());
         rating.put("timestamp", Calendar.getInstance().getTimeInMillis());
+        rating.put("totalRating", totalRating / 4);
+        rating.put("authorPic", user.getProfileImageUrl());
 
-        firestore.collection("Ratings")
-                .add(rating)
-                .addOnSuccessListener(new OnSuccessListener<DocumentReference>() {
-                    @Override
-                    public void onSuccess(DocumentReference documentReference) {
-                        Toasty.success(RatingActivity.this, "Success").show();
-                    }
-                })
-                .addOnFailureListener(new OnFailureListener() {
-                    @Override
-                    public void onFailure(@NonNull Exception e) {
-                        Toasty.error(RatingActivity.this, "Failed").show();
-                        Log.e("Rating", e.getMessage() + "");
-                    }
-                });
+        if (!ratingExists) {
+            firestore.collection("Ratings")
+                    .add(rating)
+                    .addOnSuccessListener(new OnSuccessListener<DocumentReference>() {
+                        @Override
+                        public void onSuccess(DocumentReference documentReference) {
+                            Toasty.success(RatingActivity.this, "Rating added successfully").show();
+                            finish();
+                        }
+                    })
+                    .addOnFailureListener(new OnFailureListener() {
+                        @Override
+                        public void onFailure(@NonNull Exception e) {
+                            Toasty.error(RatingActivity.this, "An error occured, please try again").show();
+                            Log.e("Rating", e.getMessage() + "");
+                        }
+                    });
+        } else {
+            firestore.collection("Ratings")
+                    .document(documentId)
+                    .update(rating)
+                    .addOnSuccessListener(new OnSuccessListener<Void>() {
+                        @Override
+                        public void onSuccess(Void aVoid) {
+                            Toasty.success(RatingActivity.this, "Rating added successfully").show();
+                            finish();
+                        }
+                    })
+                    .addOnFailureListener(new OnFailureListener() {
+                        @Override
+                        public void onFailure(@NonNull Exception e) {
+                            Toasty.error(RatingActivity.this, "An error occured, please try again").show();
+                        }
+                    });
+        }
     }
 }

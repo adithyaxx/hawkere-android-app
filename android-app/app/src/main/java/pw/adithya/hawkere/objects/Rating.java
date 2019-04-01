@@ -1,26 +1,48 @@
 package pw.adithya.hawkere.objects;
 
 public class Rating {
-    private double hygieneRating, varietyRating, seatingRating, foodRating;
+    private double hygieneRating;
+    private double varietyRating;
+    private double seatingRating;
+    private double foodRating;
+    private double totalRating;
     private String placeID;
     private String review;
     private String userID;
     private String authorName;
     private long timestamp;
+    private String authorPic;
 
     public Rating() {
     }
 
-    public Rating(String placeID, double hygieneRating, double varietyRating, double seatingRating, double foodRating, String review, String authorName, String userID, long timestamp) {
+    public Rating(String placeID, double totalRating, double hygieneRating, double varietyRating, double seatingRating, double foodRating, String review, String authorName, String userID, long timestamp) {
         this.hygieneRating = hygieneRating;
         this.varietyRating = varietyRating;
         this.seatingRating = seatingRating;
         this.foodRating = foodRating;
+        this.totalRating = totalRating;
         this.review = review;
         this.authorName = authorName;
         this.userID = userID;
         this.timestamp = timestamp;
         this.placeID = placeID;
+    }
+
+    public String getAuthorPic() {
+        return authorPic;
+    }
+
+    public void setAuthorPic(String authorPic) {
+        this.authorPic = authorPic;
+    }
+
+    public double getTotalRating() {
+        return totalRating;
+    }
+
+    public void setTotalRating(double totalRating) {
+        this.totalRating = totalRating;
     }
 
     public String getPlaceID() {

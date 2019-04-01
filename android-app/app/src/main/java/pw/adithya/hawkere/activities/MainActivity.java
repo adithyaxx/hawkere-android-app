@@ -15,6 +15,7 @@ import android.support.v4.app.FragmentActivity;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
@@ -30,7 +31,11 @@ import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MapStyleOptions;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
-import com.google.firebase.FirebaseApp;
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Task;
+import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.QueryDocumentSnapshot;
+import com.google.firebase.firestore.QuerySnapshot;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -43,6 +48,7 @@ import io.nlopez.smartlocation.SmartLocation;
 import io.nlopez.smartlocation.location.providers.LocationGooglePlayServicesWithFallbackProvider;
 import pw.adithya.hawkere.objects.Detail;
 import pw.adithya.hawkere.R;
+import pw.adithya.hawkere.objects.Rating;
 import pw.adithya.hawkere.utils.RecyclerItemClickListener;
 import pw.adithya.hawkere.adapters.DisplayAdapter;
 import pw.adithya.hawkere.utils.SAXXMLParser;
@@ -59,12 +65,17 @@ public final class MainActivity extends FragmentActivity implements OnMapReadyCa
     private ArrayList<Detail> details = new ArrayList<>();
     private DisplayAdapter displayAdapter;
     private TextView title;
+    private FirebaseFirestore firestore;
+    private double totalRating = 0;
+    private int size = 0;
 
     @Override
     protected void onCreate(Bundle bundle) {
         super.onCreate(bundle);
 
         setContentView(R.layout.activity_main);
+
+        firestore = FirebaseFirestore.getInstance();
 
         View bottomSheet = findViewById(R.id.bottom_sheet);
 
@@ -306,6 +317,35 @@ public final class MainActivity extends FragmentActivity implements OnMapReadyCa
             }
         }
 
-        displayAdapter.notifyDataSetChanged();
+        //displayAdapter.notifyDataSetChanged();
+        fetchRatings();
+    }
+
+    private void fetchRatings() {
+        firestore.collection("Ratings")
+                .get()
+                .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
+                    @Override
+                    public void onComplete(@NonNull Task<QuerySnapshot> task) {
+                        if (task.isSuccessful()) {
+                            size = task.getResult().size();
+
+                            for (QueryDocumentSnapshot document : task.getResult()) {
+                                Rating r = document.toObject(Rating.class);
+
+                                for (Detail d : details)
+                                {
+                                    if (d.getPlaceID().equals(r.getPlaceID()))
+                                        d.setRating(r.getTotalRating() / size);
+                                }
+                            }
+
+                            displayAdapter.notifyDataSetChanged();
+                        }
+                        else {
+                            Log.e("Error getting documents", "" + task.getException());
+                        }
+                    }
+                });
     }
 }

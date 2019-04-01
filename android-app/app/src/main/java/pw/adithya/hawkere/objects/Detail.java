@@ -2,6 +2,8 @@ package pw.adithya.hawkere.objects;
 
 import com.google.android.gms.maps.model.Marker;
 
+import java.util.ArrayList;
+
 public class Detail implements Comparable<Detail> {
     private String name;
     private String description;
@@ -12,6 +14,15 @@ public class Detail implements Comparable<Detail> {
     private float lat =  0f, lon = 0f, distance;
     private int noOfStalls;
     private Marker marker = null;
+    private double rating = 0;
+
+    public double getRating() {
+        return rating;
+    }
+
+    public void setRating(double rating) {
+        this.rating = rating;
+    }
 
     public String getShortAddr() {
         return shortAddr;

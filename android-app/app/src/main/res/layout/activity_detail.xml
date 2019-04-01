@@ -43,7 +43,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginLeft="16dp"
-                android:layout_marginTop="16dp"
+                android:layout_marginTop="24dp"
                 android:layout_marginRight="16dp"
                 android:text="INFO"
                 android:textColor="@color/colorPrimary"
@@ -154,7 +154,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginLeft="16dp"
-                android:layout_marginTop="16dp"
+                android:layout_marginTop="24dp"
                 android:layout_marginRight="16dp"
                 android:text="MAP"
                 android:textColor="@color/colorPrimary"
@@ -179,7 +179,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginLeft="16dp"
-                android:layout_marginTop="16dp"
+                android:layout_marginTop="24dp"
                 android:layout_marginRight="16dp"
                 android:text="RATING BREAKDOWN"
                 android:textColor="@color/colorPrimary"
@@ -216,6 +216,7 @@
                             android:layout_height="wrap_content"
                             android:layout_gravity="center_vertical"
                             android:isIndicator="true"
+                            app:mrb_progressTint="@color/colorPrimary"
                             android:numStars="5" />
                         <TextView
                             android:layout_width="wrap_content"
@@ -230,6 +231,7 @@
                             android:layout_width="75dp"
                             android:layout_height="wrap_content"
                             android:layout_gravity="center_vertical"
+                            app:mrb_progressTint="@color/colorPrimary"
                             android:isIndicator="true"
                             android:numStars="5" />
                     </LinearLayout>
@@ -251,6 +253,7 @@
                             android:layout_width="75dp"
                             android:layout_height="wrap_content"
                             android:layout_gravity="center_vertical"
+                            app:mrb_progressTint="@color/colorPrimary"
                             android:isIndicator="true"
                             android:numStars="5" />
                         <TextView
@@ -266,6 +269,7 @@
                             android:layout_width="75dp"
                             android:layout_height="wrap_content"
                             android:layout_gravity="center_vertical"
+                            app:mrb_progressTint="@color/colorPrimary"
                             android:isIndicator="true"
                             android:numStars="5" />
                     </LinearLayout>
@@ -307,7 +311,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginLeft="16dp"
                 android:layout_marginRight="16dp"
-                android:layout_marginTop="16dp" >
+                android:layout_marginTop="24dp" >
 
                 <TextView
                     android:layout_width="wrap_content"
@@ -358,12 +362,14 @@
                             android:layout_marginLeft="16dp"
                             android:layout_toRightOf="@id/imageview_profile_pic"
                             android:orientation="vertical">
+
                             <TextView
+                                android:id="@+id/textview_name"
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
+                                android:text="John Doe"
                                 android:textColor="@color/colorPrimary"
-                                android:textStyle="bold"
-                                android:text="John Doe"/>
+                                android:textStyle="bold" />
                             <me.zhanghai.android.materialratingbar.MaterialRatingBar
                                 android:id="@+id/review_rating_bar"
                                 style="@style/Widget.MaterialRatingBar.RatingBar.Indicator.Small"
@@ -371,6 +377,7 @@
                                 android:layout_height="wrap_content"
                                 android:layout_marginTop="4dp"
                                 android:layout_gravity="center_vertical"
+                                android:progressTint="@color/colorPrimary"
                                 android:isIndicator="true"
                                 android:numStars="5" />
                         </LinearLayout>
