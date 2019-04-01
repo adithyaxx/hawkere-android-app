@@ -105,7 +105,7 @@ public final class MainActivity extends FragmentActivity implements OnMapReadyCa
         mRecyclerView.setLayoutManager(layoutManager);
         mRecyclerView.setHasFixedSize(true);
 
-        mRecyclerView.addOnItemTouchListener(new RecyclerItemClickListener(this, mRecyclerView, new RecyclerItemClickListener
+        /*mRecyclerView.addOnItemTouchListener(new RecyclerItemClickListener(this, mRecyclerView, new RecyclerItemClickListener
                 .OnItemClickListener() {
             @Override
             public void onItemClick(View view, int position) {
@@ -116,36 +116,10 @@ public final class MainActivity extends FragmentActivity implements OnMapReadyCa
             @Override
             public void onItemLongClick(View view, int position) {
             }
-        }));
+        }));*/
 
         mapFragment = (SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
-
-        ImageView locationButton = findViewById(R.id.imageview_location);
-        locationButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                if (ActivityCompat.checkSelfPermission(MainActivity.this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(MainActivity.this, Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
-                    mMap.setMyLocationEnabled(true);
-                }
-
-                if (ContextCompat.checkSelfPermission(MainActivity.this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED)
-                    ActivityCompat.requestPermissions(MainActivity.this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, LOCATION_PERMISSION_ID);
-                else if (lat == 0 && lng == 0)
-                    Toasty.warning(MainActivity.this, "Your location is being determined, please try again in a few seconds \uD83D\uDE05").show();
-                else {
-                    originalLocationButton.callOnClick();
-                    CameraPosition cameraPosition = new CameraPosition.Builder()
-                            .target(new LatLng(lat - 0.02, lng))      // Sets the center of the map to Mountain View
-                            .zoom(13)                   // Sets the zoom
-                            .bearing(0)                // Sets the orientation of the camera to east
-                            .tilt(0)                   // Sets the tilt of the camera to 30 degrees
-                            .build();
-
-                    mMap.animateCamera(CameraUpdateFactory.newCameraPosition(cameraPosition));
-                }
-            }
-        });
 
         FloatingSearchView floatingSearchView = findViewById(R.id.floating_search_view);
 
@@ -177,6 +151,37 @@ public final class MainActivity extends FragmentActivity implements OnMapReadyCa
         mMap.setTrafficEnabled(false);
         mMap.setIndoorEnabled(false);
         mMap.setBuildingsEnabled(true);
+        mMap.getUiSettings().setZoomControlsEnabled(false);
+        mMap.getUiSettings().setMapToolbarEnabled(false);
+
+        originalLocationButton = ((View) (mapFragment.getView().findViewById(Integer.parseInt("1")).getParent())).findViewById(Integer.parseInt("2"));
+        originalLocationButton.setVisibility(View.GONE);
+
+        ImageView locationButton = findViewById(R.id.imageview_location);
+        locationButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (ActivityCompat.checkSelfPermission(MainActivity.this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(MainActivity.this, Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
+                    mMap.setMyLocationEnabled(true);
+                }
+
+                if (ContextCompat.checkSelfPermission(MainActivity.this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED)
+                    ActivityCompat.requestPermissions(MainActivity.this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, LOCATION_PERMISSION_ID);
+                else if (lat == 0 && lng == 0)
+                    Toasty.warning(MainActivity.this, "Your location is being determined, please try again in a few seconds \uD83D\uDE05").show();
+                else {
+                    originalLocationButton.callOnClick();
+                    CameraPosition cameraPosition = new CameraPosition.Builder()
+                            .target(new LatLng(lat - 0.02, lng))      // Sets the center of the map to Mountain View
+                            .zoom(13)                   // Sets the zoom
+                            .bearing(0)                // Sets the orientation of the camera to east
+                            .tilt(0)                   // Sets the tilt of the camera to 30 degrees
+                            .build();
+
+                    mMap.animateCamera(CameraUpdateFactory.newCameraPosition(cameraPosition));
+                }
+            }
+        });
     }
 
     private class ParseDataSet extends AsyncTask<String, Void, String> {
@@ -282,12 +287,6 @@ public final class MainActivity extends FragmentActivity implements OnMapReadyCa
         if (ActivityCompat.checkSelfPermission(MainActivity.this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(MainActivity.this, Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
             mMap.setMyLocationEnabled(true);
         }
-
-        mMap.getUiSettings().setZoomControlsEnabled(false);
-        mMap.getUiSettings().setMapToolbarEnabled(false);
-
-        originalLocationButton = ((View) (mapFragment.getView().findViewById(Integer.parseInt("1")).getParent())).findViewById(Integer.parseInt("2"));
-        originalLocationButton.setVisibility(View.GONE);
 
         CameraPosition cameraPosition;
 

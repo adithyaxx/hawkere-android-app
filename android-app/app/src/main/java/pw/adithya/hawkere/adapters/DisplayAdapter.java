@@ -1,6 +1,7 @@
 package pw.adithya.hawkere.adapters;
 
 import android.app.Activity;
+import android.content.Intent;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -18,6 +19,8 @@ import java.util.ArrayList;
 
 import jp.wasabeef.picasso.transformations.RoundedCornersTransformation;
 import me.zhanghai.android.materialratingbar.MaterialRatingBar;
+import pw.adithya.hawkere.activities.DetailActivity;
+import pw.adithya.hawkere.activities.MainActivity;
 import pw.adithya.hawkere.objects.Detail;
 import pw.adithya.hawkere.R;
 
@@ -69,7 +72,7 @@ public class DisplayAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
         return filteredArrayList.size();
     }
 
-    private class MyViewHolder extends RecyclerView.ViewHolder {
+    private class MyViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
         private TextView nameTextView, addressTextView, distanceTextView;
         private MaterialRatingBar materialRatingBar;
         private ImageView imageView;
@@ -82,6 +85,14 @@ public class DisplayAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
             addressTextView = view.findViewById(R.id.textview_address);
             materialRatingBar = view.findViewById(R.id.material_rating_bar);
             imageView = view.findViewById(R.id.imageview_pic);
+
+            view.setOnClickListener(this);
+        }
+
+        @Override
+        public void onClick(View v) {
+            DetailActivity.detail = filteredArrayList.get(getAdapterPosition());
+            activity.startActivity(new Intent(activity, DetailActivity.class));
         }
     }
 

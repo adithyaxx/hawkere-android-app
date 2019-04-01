@@ -73,17 +73,6 @@ public class RatingActivity extends AppCompatActivity {
         setSupportActionBar(toolbar);
         toolbar.setOverflowIcon(getDrawable(R.drawable.ic_check_white_48dp));
 
-        SessionManager sessionManager = new SessionManager(this);
-
-        if (sessionManager.isLoggedIn()) {
-            user = sessionManager.getUser();
-            Log.e("User", user.getEmailID() + "");
-        } else {
-            startActivity(new Intent(RatingActivity.this, LoginActivity.class));
-        }
-
-        populateFields();
-
         tickImageView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -110,7 +99,7 @@ public class RatingActivity extends AppCompatActivity {
                             for (QueryDocumentSnapshot document : task.getResult()) {
                                 Rating r = document.toObject(Rating.class);
 
-                                if (r.getPlaceID().equals(placeID) && r.getUserID().equals(user.getUserID())) {
+                                if (r.getPlaceID().equals(placeID) && user != null && r.getUserID().equals(user.getUserID())) {
                                     rating = r;
 
                                     hygieneRatingBar.setRating((float) (rating.getHygieneRating()));
@@ -185,5 +174,22 @@ public class RatingActivity extends AppCompatActivity {
                         }
                     });
         }
+    }
+
+    @Override
+    public void onResume()
+    {
+        super.onResume();
+
+        SessionManager sessionManager = new SessionManager(this);
+
+        if (sessionManager.isLoggedIn()) {
+            user = sessionManager.getUser();
+            Log.e("User", user.getEmailID() + "");
+        } else {
+            startActivity(new Intent(RatingActivity.this, LoginActivity.class));
+        }
+
+        populateFields();
     }
 }

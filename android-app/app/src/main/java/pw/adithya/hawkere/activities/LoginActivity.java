@@ -35,9 +35,6 @@ import com.google.android.gms.common.SignInButton;
 import com.google.android.gms.common.api.ApiException;
 import com.google.android.gms.tasks.Task;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import pw.adithya.hawkere.R;
 import pw.adithya.hawkere.SessionManager;
 import pw.adithya.hawkere.objects.User;
@@ -64,7 +61,7 @@ public class LoginActivity extends AppCompatActivity implements OnClickListener 
         mGoogleSignInClient = GoogleSignIn.getClient(this, gso);
 
         SignInButton signInButton = findViewById(R.id.sign_in_button);
-        signInButton.setSize(SignInButton.SIZE_STANDARD);
+        signInButton.setSize(SignInButton.SIZE_WIDE);
 
         signInButton.setOnClickListener(this);
     }
@@ -75,7 +72,6 @@ public class LoginActivity extends AppCompatActivity implements OnClickListener 
             case R.id.sign_in_button:
                 signIn();
                 break;
-
         }
     }
 
@@ -103,7 +99,9 @@ public class LoginActivity extends AppCompatActivity implements OnClickListener 
             user.setFirstName(account.getGivenName());
             user.setLastName(account.getFamilyName());
             user.setEmailID(account.getEmail());
-            user.setProfileImageUrl(account.getPhotoUrl().toString());
+
+            if (account.getPhotoUrl() != null)
+                user.setProfileImageUrl(account.getPhotoUrl().toString());
 
             SessionManager sessionManager = new SessionManager(this);
             sessionManager.createSession(user);
