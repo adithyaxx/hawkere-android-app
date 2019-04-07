@@ -445,7 +445,7 @@ public class DetailActivity extends AppCompatActivity implements OnMapReadyCallb
 
     private void getOperatingHours()
     {
-        String url = "https://maps.googleapis.com/maps/api/place/findplacefromtext/json?key=AIzaSyBE2b7gwWXpmcs2IHY8pPMKjNXPv4HOiCk&input=" + detail.getName() + "&inputtype=textquery&fields=place_id";
+        String url = "https://maps.googleapis.com/maps/api/place/findplacefromtext/json?key=" + R.string.API_KEY + "&input=" + detail.getName() + "&inputtype=textquery&fields=place_id";
         final RequestQueue mRequestQueue = Volley.newRequestQueue(getApplicationContext());
 
         final StringRequest stringRequest = new StringRequest(Request.Method.GET, url, new Response.Listener<String>() {
@@ -464,7 +464,7 @@ public class DetailActivity extends AppCompatActivity implements OnMapReadyCallb
 
                     if (!placeID.equals(""))
                     {
-                        String url = "https://maps.googleapis.com/maps/api/place/details/json?key=AIzaSyBE2b7gwWXpmcs2IHY8pPMKjNXPv4HOiCk&placeid=" + placeID + "&fields=opening_hours";
+                        String url = "https://maps.googleapis.com/maps/api/place/details/json?key=" + R.string.API_KEY + "&placeid=" + placeID + "&fields=opening_hours";
                         final ArrayList<String> openingHours = new ArrayList<>();
 
                         final StringRequest stringRequest2 = new StringRequest(Request.Method.GET, url, new Response.Listener<String>() {
