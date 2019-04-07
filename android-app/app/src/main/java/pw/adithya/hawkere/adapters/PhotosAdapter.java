@@ -39,12 +39,14 @@ public class PhotosAdapter extends  RecyclerView.Adapter<PhotosAdapter.PhotosVie
                 .load(images.get(position).getUrl())
                 .centerCrop()
                 .apply(RequestOptions.bitmapTransform(new RoundedCorners(14)))
+                .placeholder(R.drawable.user)
                 .into(holder.photoImageView);
 
         Glide.with(context)
                 .load(images.get(position).getAuthorPic())
                 .centerCrop()
                 .apply(RequestOptions.bitmapTransform(new CircleCrop()))
+                .placeholder(R.drawable.user)
                 .into(holder.profileImageView);
 
         holder.nameTextView.setText(images.get(position).getAuthorName());

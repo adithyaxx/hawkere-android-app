@@ -13,22 +13,6 @@ public class Rating implements Comparable<Rating> {
     private long timestamp;
     private String authorPic;
 
-    public Rating() {
-    }
-
-    public Rating(String placeID, double totalRating, double hygieneRating, double varietyRating, double seatingRating, double foodRating, String review, String authorName, String userID, long timestamp) {
-        this.hygieneRating = hygieneRating;
-        this.varietyRating = varietyRating;
-        this.seatingRating = seatingRating;
-        this.foodRating = foodRating;
-        this.totalRating = totalRating;
-        this.review = review;
-        this.authorName = authorName;
-        this.userID = userID;
-        this.timestamp = timestamp;
-        this.placeID = placeID;
-    }
-
     public String getAuthorPic() {
         return authorPic;
     }

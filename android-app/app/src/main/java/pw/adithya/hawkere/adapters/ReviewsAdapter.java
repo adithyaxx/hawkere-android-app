@@ -1,6 +1,7 @@
 package pw.adithya.hawkere.adapters;
 
 import android.content.Context;
+import android.graphics.Color;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -10,7 +11,6 @@ import android.widget.TextView;
 
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.load.resource.bitmap.CircleCrop;
-import com.bumptech.glide.load.resource.bitmap.RoundedCorners;
 import com.bumptech.glide.request.RequestOptions;
 
 import org.ocpsoft.prettytime.PrettyTime;
@@ -20,7 +20,6 @@ import java.util.Date;
 
 import me.zhanghai.android.materialratingbar.MaterialRatingBar;
 import pw.adithya.hawkere.R;
-import pw.adithya.hawkere.objects.Photo;
 import pw.adithya.hawkere.objects.Rating;
 
 public class ReviewsAdapter extends  RecyclerView.Adapter<ReviewsAdapter.PhotosViewHolder>{
@@ -44,6 +43,7 @@ public class ReviewsAdapter extends  RecyclerView.Adapter<ReviewsAdapter.PhotosV
                 .load(reviews.get(position).getAuthorPic())
                 .centerCrop()
                 .apply(RequestOptions.bitmapTransform(new CircleCrop()))
+                .placeholder(R.drawable.user)
                 .into(holder.profileImageView);
 
         holder.nameTextView.setText(reviews.get(position).getAuthorName());

@@ -6,6 +6,7 @@ import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.drawable.BitmapDrawable;
 import android.location.Location;
+import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
@@ -19,6 +20,7 @@ import android.util.Log;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.arlib.floatingsearchview.FloatingSearchView;
 import com.google.android.gms.maps.CameraUpdateFactory;
@@ -69,6 +71,7 @@ public final class MainActivity extends FragmentActivity implements OnMapReadyCa
     private FirebaseFirestore firestore;
     private double totalRating = 0;
     private int size = 0;
+    private Uri data;
 
     @Override
     protected void onCreate(Bundle bundle) {
@@ -77,6 +80,10 @@ public final class MainActivity extends FragmentActivity implements OnMapReadyCa
         setContentView(R.layout.activity_main);
 
         firestore = FirebaseFirestore.getInstance();
+
+        Intent intent = getIntent();
+        String action = intent.getAction();
+        data = intent.getData();
 
         View bottomSheet = findViewById(R.id.bottom_sheet);
 
@@ -390,6 +397,17 @@ public final class MainActivity extends FragmentActivity implements OnMapReadyCa
                             }
 
                             displayAdapter.notifyDataSetChanged();
+
+                            if (data != null && data.getPathSegments() != null)
+                            {
+                                for (Detail d : details)
+                                {
+                                    if (d.getPlaceID().equals(data.getPathSegments().get(0))) {
+                                        DetailActivity.detail = d;
+                                        startActivity(new Intent(MainActivity.this, DetailActivity.class));
+                                    }
+                                }
+                            }
                         }
                         else {
                             Log.e("Error getting documents", "" + task.getException());
